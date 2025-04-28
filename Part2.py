@@ -8,7 +8,8 @@ class Inventory:
         self.inventory = []           
         self.manufacturer_set = set() # For quick lookup of manufacturer names.
         self.item_type_set = set()    # same
-        def load_data(self):
+
+    def load_data(self):
         #open file
         with open('ManufacturerList.txt', 'r') as file:
             #Do I really need to explain what a for loop does? Just means do this to all the lines.
@@ -37,7 +38,8 @@ class Inventory:
                 parts = line.strip().split(',')
                 item_id, service_date = parts
                 self.service_date_data[item_id] = service_date
-            def build_inventory(self):
+
+    def build_inventory(self):
         #Fine I'll do it myself
         self.inventory = [
             ([item_id,
@@ -51,12 +53,14 @@ class Inventory:
         self.inventory.sort(key=lambda x: x[1].lower())  #sort it
         self.manufacturer_set = {item[1].lower() for item in self.inventory}
         self.item_type_set = {item[2].lower() for item in self.inventory}
+
     def is_valid_item(self, item):# checks if it is a valid item
         try:
             service_date_obj = datetime.datetime.strptime(item[4], '%m/%d/%Y')
         except Exception:
             return False
         return service_date_obj >= datetime.datetime.now() and len(item) == 5
+
     def query_item(self):
         while True:
             user_input = input("Please enter your query (or 'q' to quit): ").strip()
@@ -93,7 +97,9 @@ class Inventory:
                         alternatives.append(item)
             if alternatives:
                 best_alternative = min(alternatives, key=lambda x: abs(x[3] - chosen_item[3]))
-                print("You may, also, consider:", best_alternative[0], best_alternative[1], best_alternative[2], f"${best_alternative[3]:.2f}")if __name__ == '__main__':
+                print("You may, also, consider:", best_alternative[0], best_alternative[1], best_alternative[2], f"${best_alternative[3]:.2f}")
+
+if __name__ == '__main__':
     inv = Inventory()
     inv.load_data()
     inv.build_inventory()
