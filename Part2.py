@@ -57,3 +57,41 @@ class Inventory:
         except Exception:
             return False
         return service_date_obj >= datetime.datetime.now() and len(item) == 5
+    def query_item(self):
+        while True:
+            user_input = input("Please enter your query (or 'q' to quit): ").strip()
+            if user_input.lower() == 'q':
+                break
+            # Break input into words and ignore fluff
+            words = user_input.lower().split()
+            makers = [w for w in words if w in self.manufacturer_set]
+            types = [w for w in words if w in self.item_type_set]
+            # If more than one manufacturer or item type, or none, then it wont work
+            if len(makers) != 1 or len(types) != 1:
+                print("No such item in inventory")
+                continue
+            # Grab the manufacturer and type from the query
+            manufacturer_query = makers[0]
+            item_type_query = types[0]
+            valid_items = []
+            # Loop through inventory and pick valid items that match the query
+            for item in self.inventory:
+                if item[1].lower() == manufacturer_query and item[2].lower() == item_type_query:
+                    if self.is_valid_item(item):
+                        valid_items.append(item)
+            if not valid_items:
+                print("No such item in inventory")
+                continue
+            # Choose that pricy piece: the most expensive valid item
+            chosen_item = max(valid_items, key=lambda x: x[3])
+            print("Your item is:", chosen_item[0], chosen_item[1], chosen_item[2], f"${chosen_item[3]:.2f}")
+            alternatives = []
+            # Now search for an alternative: same type, different maker
+            for item in self.inventory:
+                if item[2].lower() == item_type_query and item[1].lower() != manufacturer_query:
+                    if self.is_valid_item(item):
+                        alternatives.append(item)
+            if alternatives:
+                best_alternative = min(alternatives, key=lambda x: abs(x[3] - chosen_item[3]))
+                print("You may, also, consider:", best_alternative[0], best_alternative[1], best_alternative[2], f"${best_alternative[3]:.2f}")
+  
