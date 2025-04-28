@@ -37,3 +37,17 @@ class Inventory:
                 parts = line.strip().split(',')
                 item_id, service_date = parts
                 self.service_date_data[item_id] = service_date
+            def build_inventory(self):
+        #Fine I'll do it myself
+        self.inventory = [
+            ([item_id,
+              data['manufacturer'],  # the second part is the manufacturer
+              data['type'],          # nothing new here
+              self.price_data.get(item_id, None),  # Price
+              self.service_date_data.get(item_id, None)]  # Service Date
+             + ([data['damaged']] if data['damaged'] else []))
+            for item_id, data in self.manufacturer_data.items()
+        ]
+        self.inventory.sort(key=lambda x: x[1].lower())  #sort it
+        self.manufacturer_set = {item[1].lower() for item in self.inventory}
+        self.item_type_set = {item[2].lower() for item in self.inventory}
