@@ -1,4 +1,5 @@
 import datetime
+
 class Inventory:
     def __init__(self):
         # Data sets, they store things. Specifically the things that the variables are named after.
@@ -43,42 +44,46 @@ class Inventory:
         #Fine I'll do it myself
         self.inventory = [
             ([item_id,
-              data['manufacturer'],  # the second part is the manufacturer
-              data['type'],          # nothing new here
-              self.price_data.get(item_id, None),  # Price
-              self.service_date_data.get(item_id, None)]  # Service Date
-             + ([data['damaged']] if data['damaged'] else []))
-            for item_id, data in self.manufacturer_data.items()
+              self.manufacturer_data[item_id]['manufacturer'],  # the second part is the manufacturer
+              self.manufacturer_data[item_id]['type'],          # nothing new here
+              self.price_data.get(item_id, None),               # Price
+              self.service_date_data.get(item_id, None)]         # Service Date
+             + ([self.manufacturer_data[item_id]['damaged']] if self.manufacturer_data[item_id]['damaged'] else []))
+            for item_id in self.manufacturer_data
         ]
         self.inventory.sort(key=lambda x: x[1].lower())  #sort it
         self.manufacturer_set = {item[1].lower() for item in self.inventory}
         self.item_type_set = {item[2].lower() for item in self.inventory}
 
-    def is_valid_item(self, item):# checks if it is a valid item
+    def is_valid_item(self, item):  # checks if it is a valid item
         try:
             service_date_obj = datetime.datetime.strptime(item[4], '%m/%d/%Y')
         except Exception:
             return False
+        # If it's past its service date or marked as damaged (i.e. extra element in list), it's not valid
         return service_date_obj >= datetime.datetime.now() and len(item) == 5
 
     def query_item(self):
+        # Synonym mapping: map "computer" to "laptop".
+        synonym_map = {"computer": "laptop"}
         while True:
             user_input = input("Please enter your query (or 'q' to quit): ").strip()
             if user_input.lower() == 'q':
                 break
-            # Break input into words and ignore fluff
+            # Split query into words and apply synonym mapping.
             words = user_input.lower().split()
-            makers = [w for w in words if w in self.manufacturer_set]
-            types = [w for w in words if w in self.item_type_set]
-            # If more than one manufacturer or item type, or none, then it wont work
+            normalized_words = [synonym_map.get(word, word) for word in words]
+            # Only consider words that match the manufacturers or types in our inventory.
+            makers = [word for word in normalized_words if word in self.manufacturer_set]
+            types = [word for word in normalized_words if word in self.item_type_set]
+            # If the query doesn't yield exactly one manufacturer and one type, reject it.
             if len(makers) != 1 or len(types) != 1:
                 print("No such item in inventory")
                 continue
-            # Grab the manufacturer and type from the query
             manufacturer_query = makers[0]
             item_type_query = types[0]
             valid_items = []
-            # Loop through inventory and pick valid items that match the query
+            # Loop through inventory and pick valid items that match our query.
             for item in self.inventory:
                 if item[1].lower() == manufacturer_query and item[2].lower() == item_type_query:
                     if self.is_valid_item(item):
@@ -86,11 +91,11 @@ class Inventory:
             if not valid_items:
                 print("No such item in inventory")
                 continue
-            # Choose that pricy piece: the most expensive valid item
+            # Choose the most expensive valid item.
             chosen_item = max(valid_items, key=lambda x: x[3])
             print("Your item is:", chosen_item[0], chosen_item[1], chosen_item[2], f"${chosen_item[3]:.2f}")
             alternatives = []
-            # Now search for an alternative: same type, different maker
+            # Now, search for an alternative: same type, different manufacturer.
             for item in self.inventory:
                 if item[2].lower() == item_type_query and item[1].lower() != manufacturer_query:
                     if self.is_valid_item(item):
@@ -99,7 +104,7 @@ class Inventory:
                 best_alternative = min(alternatives, key=lambda x: abs(x[3] - chosen_item[3]))
                 print("You may, also, consider:", best_alternative[0], best_alternative[1], best_alternative[2], f"${best_alternative[3]:.2f}")
 
-if __name__ == '__main__': #Asks for a querry
+if __name__ == '__main__':
     inv = Inventory()
     inv.load_data()
     inv.build_inventory()
