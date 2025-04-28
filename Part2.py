@@ -51,3 +51,9 @@ class Inventory:
         self.inventory.sort(key=lambda x: x[1].lower())  #sort it
         self.manufacturer_set = {item[1].lower() for item in self.inventory}
         self.item_type_set = {item[2].lower() for item in self.inventory}
+    def is_valid_item(self, item):# checks if it is a valid item
+        try:
+            service_date_obj = datetime.datetime.strptime(item[4], '%m/%d/%Y')
+        except Exception:
+            return False
+        return service_date_obj >= datetime.datetime.now() and len(item) == 5
