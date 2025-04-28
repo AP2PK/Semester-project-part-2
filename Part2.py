@@ -104,7 +104,7 @@ class Inventory:
                 best_alternative = min(alternatives, key=lambda x: abs(x[3] - chosen_item[3]))
                 print("You may, also, consider:", best_alternative[0], best_alternative[1], best_alternative[2], f"${best_alternative[3]:.2f}")
 
-if __name__ == '__main__':
+if __name__ == '__main__': #adds query
     inv = Inventory()
     inv.load_data()
     inv.build_inventory()
