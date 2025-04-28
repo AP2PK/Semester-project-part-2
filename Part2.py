@@ -8,3 +8,32 @@ class Inventory:
         self.inventory = []           
         self.manufacturer_set = set() # For quick lookup of manufacturer names.
         self.item_type_set = set()    # same
+        def load_data(self):
+        #open file
+        with open('ManufacturerList.txt', 'r') as file:
+            #Do I really need to explain what a for loop does? Just means do this to all the lines.
+            for line in file:
+                #one part at a time. Comma dilemitors
+                parts = line.strip().split(',')
+                #The first part is the Item ID
+                item_id = parts[0]
+                #the second part is the manufacturer; nothing new here; Is it damaged?
+                self.manufacturer_data[item_id] = {
+                    'manufacturer': parts[1],
+                    'type': parts[2],
+                    'damaged': parts[3] if len(parts) > 3 and parts[3].strip() != "" else False
+                }
+        #Now time to store pricelist
+        with open('PriceList.txt', 'r') as file:
+            for line in file:
+                #Nothing New
+                parts = line.strip().split(',')
+                item_id, price = parts
+                #Attach price data to item ID in a dictionary
+                self.price_data[item_id] = float(price)
+        #Nothing new.
+        with open('ServiceDatesList.txt', 'r') as file:
+            for line in file:
+                parts = line.strip().split(',')
+                item_id, service_date = parts
+                self.service_date_data[item_id] = service_date
