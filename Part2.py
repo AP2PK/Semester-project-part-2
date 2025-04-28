@@ -63,6 +63,24 @@ class Inventory:
         # If it's past its service date or marked as damaged (i.e. extra element in list), it's not valid
         return service_date_obj >= datetime.datetime.now() and len(item) == 5
 
+    def get_item_status(self, item):
+        #Nothing New.
+        status = ""
+        try:
+            date = datetime.datetime.strptime(item[4], '%m/%d/%Y')
+            if date < datetime.datetime.now():
+                status += "Expired"
+        except Exception:
+            status += "Expired"
+        if len(item) > 5:
+            if status:
+                status += " and Damaged"
+            else:
+                status += "Damaged"
+        if status:
+            return "(" + status + ")"
+        return ""
+
     def query_item(self):
         # Synonym mapping: map "computer" to "laptop".
         synonym_map = {"computer": "laptop"}
@@ -82,29 +100,27 @@ class Inventory:
                 continue
             manufacturer_query = makers[0]
             item_type_query = types[0]
-            valid_items = []
-            # Loop through inventory and pick valid items that match our query.
+            items = []
+            # Loop through inventory and pick items that match our query.
             for item in self.inventory:
                 if item[1].lower() == manufacturer_query and item[2].lower() == item_type_query:
-                    if self.is_valid_item(item):
-                        valid_items.append(item)
-            if not valid_items:
+                    items.append(item)
+            if not items:
                 print("No such item in inventory")
                 continue
-            # Choose the most expensive valid item.
-            chosen_item = max(valid_items, key=lambda x: x[3])
-            print("Your item is:", chosen_item[0], chosen_item[1], chosen_item[2], f"${chosen_item[3]:.2f}")
+            # Choose the most expensive item.
+            chosen_item = max(items, key=lambda x: x[3])
+            print("Your item is:", chosen_item[0], chosen_item[1], chosen_item[2], f"${chosen_item[3]:.2f}", self.get_item_status(chosen_item))
             alternatives = []
             # Now, search for an alternative: same type, different manufacturer.
             for item in self.inventory:
                 if item[2].lower() == item_type_query and item[1].lower() != manufacturer_query:
-                    if self.is_valid_item(item):
-                        alternatives.append(item)
+                    alternatives.append(item)
             if alternatives:
                 best_alternative = min(alternatives, key=lambda x: abs(x[3] - chosen_item[3]))
-                print("You may, also, consider:", best_alternative[0], best_alternative[1], best_alternative[2], f"${best_alternative[3]:.2f}")
+                print("You may, also, consider:", best_alternative[0], best_alternative[1], best_alternative[2], f"${best_alternative[3]:.2f}", self.get_item_status(best_alternative))
 
-if __name__ == '__main__': #adds query
+if __name__ == '__main__':
     inv = Inventory()
     inv.load_data()
     inv.build_inventory()
